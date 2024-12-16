@@ -1,8 +1,7 @@
 from flask import Flask, request, jsonify
 from app.model import load_model
-import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
 
 app = Flask(__name__)
 
@@ -15,10 +14,13 @@ except FileNotFoundError:
     model, preprocessor = None, None
     print("Error: Model and preprocessor not found. Please train the model first.")
 
-@app.route('/predict', methods=['POST'])
+
+@app.route("/predict", methods=["POST"])
 def predict():
     if model is None or preprocessor is None:
-        return jsonify({"error": "Model not available. Please train the model first."}), 500
+        return jsonify(
+            {"error": "Model not available. Please train the model first."}
+        ), 500
     try:
         # Parse input JSON
         input_data = request.get_json().get("input_data")
@@ -27,8 +29,15 @@ def predict():
 
         # Convert input to appropriate format
         column_names = [
-            "longitude", "latitude", "housing_median_age", "total_rooms",
-            "total_bedrooms", "population", "households", "median_income", "ocean_proximity"
+            "longitude",
+            "latitude",
+            "housing_median_age",
+            "total_rooms",
+            "total_bedrooms",
+            "population",
+            "households",
+            "median_income",
+            "ocean_proximity",
         ]
         input_df = pd.DataFrame([input_data], columns=column_names)
 
@@ -54,5 +63,6 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)
