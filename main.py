@@ -1,12 +1,9 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestRegressor
-from joblib import dump
+import json
 from app.preprocesses import load_data, preprocess_data, split_data
-from app.model import train_model, evaluate_model, save_model
+from app.model import train_model, save_model
+from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np
 
 # Step 1: Load the dataset
 data = load_data("data/housing.csv")
@@ -26,6 +23,31 @@ test_data.to_csv("app/test_data.csv", index=False)
 model = train_model(X_train, y_train)
 
 # Step 6: Save the trained model and preprocessor
-save_model(model, preprocessor, model_path="app/model.joblib", preprocessor_path="app/preprocessor.joblib")
+save_model(
+    model,
+    preprocessor,
+    model_path="app/model.joblib",
+    preprocessor_path="app/preprocessor.joblib",
+)
 
 print("Model and preprocessor saved successfully.")
+
+# Evaluate model on the test set
+predictions = model.predict(X_test)
+mse = mean_squared_error(y_test, predictions)
+rmse = np.sqrt(mse)
+r2 = r2_score(y_test, predictions)
+
+# Save evaluation results
+performance_data = {
+    "mse": mse,
+    "rmse": rmse,
+    "r2": r2,
+    "actual": list(y_test),
+    "predicted": list(predictions),
+}
+
+with open("app/performance.json", "w") as f:
+    json.dump(performance_data, f)
+
+print(f"Performance Metrics:\nMSE: {mse:.2f}, RMSE: {rmse:.2f}, R²: {r2:.2f}")
